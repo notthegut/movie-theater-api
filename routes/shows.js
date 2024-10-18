@@ -1,23 +1,29 @@
 const express = require("express");
-const {User, Show} = require('../models');
+const { Show, User } = require('../models/index')
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 
-router.get("/shows", async (req,res) =>{
+router.get("/", async (req,res) =>{
     const shows = await Show.findAll();
     res.status(200).json(shows);
 });
 
-router.get("/shows:id", async (req,res) =>{
+router.get("/:id", async (req,res) =>{
     const show = await Show.findByPk(req.params.id);
     res.status(200).json(show);
 });
 
-router.get("/shows:id/users", async (req,res) =>{
-    const show = await Show.findByPk(req.params.id, {include : User });
-    res.status(200).json(show.Users);
+router.get("/:id/users", async (req,res) =>{
+    const show = await Show.findByPk(req.params.id);
+    if(show){
+        const user = await show.getUsers();
+        res.status(200).json(user)
+    } else {
+        res.status(404).json({message: "not found"})
+    }
 });
 
-router.put("/shows:id", async (req,res) =>{
+router.put("/:id", async (req,res) =>{
     if (show) {
         show.avaliable = req.body.avaliable;
         await show.save();
@@ -27,7 +33,7 @@ router.put("/shows:id", async (req,res) =>{
     }
 });
 
-router.delete("/shows:id", async (req,res) =>{
+router.delete("/:id", async (req,res) =>{
     const show = await Show.findByPk(req.params.id);
     if (show){
         await show.destroy();

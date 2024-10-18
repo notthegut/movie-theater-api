@@ -1,23 +1,29 @@
 const express = require("express");
-const {User, Show} = require('../models');
+const { User, Show } = require('../models/index'); 
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 
-router.get("/users", async (req,res) =>{
+router.get("/", async (req,res) =>{
     const users = await User.findAll();
     res.status(200).json(users);
 });
 
-router.get("/users:id", async (req,res) =>{
+router.get("/:id", async (req,res) =>{
     const user = await User.findByPk(req.params.id);
     res.status(200).json(user)
 });
 
-router.get("/users:id/shows", async (req,res) =>{
-    const user = await User.findByPk(req.params.id, {include : Show});
-    res.status(200).json(user.Shows);
+router.get("/:id/shows", async (req,res) =>{
+    const user = await User.findByPk(req.params.id);
+    if(user) {
+        const show = await user.getShows();
+        res.status(200).json(show)
+    } else {
+        res.status(404).json({message: "not found"})
+    }
 });
 
-router.put('/users:id/shows:showId', async (req,res) =>{
+router.put("/:id/shows:showId", async (req,res) =>{
     const user = await User.findByPk(req.params.id);
     const show = await Show.findByPk(req.params.showId);
     
